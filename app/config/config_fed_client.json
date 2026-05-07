@@ -1,0 +1,18 @@
+{
+  "format_version": 2,
+  "executors": [
+    {
+      "tasks": [
+        "GET_LOCAL_SVR_WEIGHTS",
+        "ACCEPT_AGGREGATED_WEIGHTS"
+      ],
+      "executor": {
+        "path": "executor.executor.BrainAgeFNCExecutor",
+        "args": {}
+      }
+    }
+  ],
+  "task_result_filters": [],
+  "task_data_filters": [],
+  "components": []
+}

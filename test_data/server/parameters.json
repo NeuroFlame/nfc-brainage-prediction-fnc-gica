@@ -1,0 +1,31 @@
+{
+  "data_file": "coinstac-gica_postprocess_results.mat",
+  "label_file": "covariates.csv",
+  "input_source": "GICA",
+  "split_type": "random",
+  "test_size": 0.1,
+  "shuffle": true,
+  "svr_params_local": {
+    "epsilon": 0,
+    "tol": 0.0001,
+    "C": 1,
+    "loss": "epsilon_insensitive",
+    "fit_intercept": true,
+    "intercept_scaling": 1,
+    "dual": true,
+    "random_state": 0,
+    "max_iter": 10000
+  },
+  "svr_params_owner": {
+    "epsilon": 0,
+    "tol": 0.0001,
+    "C": 1,
+    "loss": "epsilon_insensitive",
+    "fit_intercept": true,
+    "intercept_scaling": 1,
+    "dual": true,
+    "random_state": 0,
+    "max_iter": 10000
+  },
+  "site_id_name_map": {}
+}
