@@ -27,5 +27,5 @@
     "random_state": 0,
     "max_iter": 10000
   },
-  "site_id_name_map": {}
+  "consortium_leader_id": "site1"
 }

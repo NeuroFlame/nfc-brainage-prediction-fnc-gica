@@ -6,7 +6,9 @@ This computation implements the decentralized brain age prediction algorithm des
 
 > Basodi S, Raja R, Liu J, Verner E, and Calhoun V. *Decentralized approaches for Brain Age Prediction.* TReNDS Center.
 
-The algorithm uses a two-round decentralized Support Vector Regression (SVR) with FNC (Functional Network Connectivity) matrices as features. FNC data is derived from group ICA (GICA) post-processing of resting-state fMRI scans. Each site contributes local model weights without sharing raw subject data. One designated site acts as the "owner" (holdout) site and serves as an independent evaluator; all other sites train local SVR models and contribute their learned weights to the aggregation step.
+The algorithm uses a two-round decentralized Support Vector Regression (SVR) with FNC (Functional Network Connectivity) matrices as features. FNC data is derived from group ICA (GICA) post-processing of resting-state fMRI scans. Each site contributes local model weights without sharing raw subject data. The consortium leader's site acts as the "owner" (holdout) site and serves as an independent evaluator; all other sites train local SVR models and contribute their learned weights to the aggregation step.
+
+**Owner site**: The consortium leader identifies their site with the `consortium_leader_id` setting. The leader must take part in the run with data, and at least one other site must participate to train a local model.
 
 **Reference dataset:** The paper validated this algorithm on **UKBiobank** resting-state fMRI data from **11,754 subjects** (ages 44–80), preprocessed with FSL/SPM12 and ICA to yield 53 intrinsic connectivity networks (ICNs), producing **1,378 upper-triangular FNC features** per subject. Data was distributed across 6 sites (1 owner + 5 members), with 90% train / 10% test per site. The decentralized model achieved RMSE of ~7.5 years and MAE of ~6.3 years on the test set — performance on par with a centralized model trained on all data pooled together.
 
@@ -14,6 +16,7 @@ The algorithm uses a two-round decentralized Support Vector Regression (SVR) wit
 
 ```json
 {
+    "consortium_leader_id": "site1",
     "input_source": "GICA",
     "split_type": "random",
     "test_size": 0.1,
@@ -47,6 +50,7 @@ The algorithm uses a two-round decentralized Support Vector Regression (SVR) wit
 
 | Variable Name | Type | Description | Allowed Options | Default | Required |
 | --- | --- | --- | --- | --- | --- |
+| `consortium_leader_id` | `string` | The consortium leader's site name (or NeuroFLAME user ID). That site is the owner: it holds out its data and trains the final model. | a participating site | — | ✅ true |
 | `input_source` | `string` | Specifies the format/source of the FNC data file. | `"GICA"`, `"UKBioBank_Comp2019"` | `"GICA"` | ❌ false |
 | `split_type` | `string` | Method used to split each site's data into train and test sets. | `"random"`, `"age_range_stratified"` | `"random"` | ❌ false |
 | `test_size` | `float` | Fraction of subjects reserved for the test set at each site. | `0.0` – `1.0` | `0.1` | ❌ false |
@@ -93,8 +97,8 @@ The key steps of the algorithm include:
     - A `MinMaxScaler + LinearSVR` pipeline is fit on all available local data (train + test combined), maximizing the signal contributed to the federated aggregation.
     - Each site returns its learned weight vector (`w_local`), intercept, and performance metrics (RMSE, MAE) to the server.
 
-2. **Round 0 — Owner Site Caching**:
-    - The owner site loads and splits its data but does not train a model. Instead, it caches the train/test splits in memory for use in round 1.
+2. **Round 0 — Owner Site**:
+    - The owner site loads and splits its data but does not train a model. It keeps its train/test split for use in round 1.
 
 3. **Server Aggregation (between rounds)**:
     - The server stacks all received local weight vectors into a matrix `w_locals` of shape `(n_features × n_sites)` and broadcasts it to all sites.
@@ -104,7 +108,7 @@ The key steps of the algorithm include:
     - A second `MinMaxScaler + LinearSVR` pipeline is fit on the projected features `U`, and final performance metrics are computed and saved.
 
 5. **Non-Owner Sites (round 1)**:
-    - Non-owner sites receive the aggregated weights broadcast but perform no further computation. They return an empty response.
+    - Non-owner sites receive the aggregated weights but perform no further computation.
 
 ### Assumptions
 
@@ -117,8 +121,8 @@ The key steps of the algorithm include:
 
 ### Output Description
 
-- **Output files**: `local_svr_result.json` (per non-owner site), `owner_svr_result.json` (owner site)
-- Each file is written to the site's output directory at the end of its respective computation round.
+- **Output files**: `local_svr_result.json` (per non-owner site), `owner_svr_result.json` (owner site), and an `index.html` report at every site.
+- All files are written to each site's output directory at the end of the run.
 
 The computation outputs both **site-level** and **owner-level** results, which include:
 
