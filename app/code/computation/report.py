@@ -1,31 +1,25 @@
-"""
-Generates index.html for Brain Age Prediction FNC GICA results.
+"""Render the self-contained HTML report written as ``index.html``.
 
 Algorithm reference:
   Basodi S, Raja R, Liu J, Verner E, and Calhoun V.
   "Decentralized approaches for Brain Age Prediction." TReNDS Center.
 """
 
-import os
+import html
 
 
-def generate_report(
-    output_dir: str,
+def build_report(
     site_name: str,
     local_result: dict = None,
     owner_result: dict = None,
-):
+) -> str:
+    """Return the owner or member report for one site."""
+    site_name = html.escape(site_name)
     if owner_result:
-        html = _build_owner_report(owner_result, site_name)
-    elif local_result:
-        html = _build_local_report(local_result, site_name)
-    else:
-        html = _build_empty_report()
-
-    out_path = os.path.join(output_dir, "index.html")
-    with open(out_path, "w") as f:
-        f.write(html)
-    return out_path
+        return _build_owner_report(owner_result, site_name)
+    if local_result:
+        return _build_local_report(local_result, site_name)
+    return _build_empty_report()
 
 
 # ---------------------------------------------------------------------------
@@ -70,18 +64,18 @@ SCIENTIFIC_CONTEXT = """
 # identical 20-subject data, same SVR params). Metrics vary between runs due to the
 # random train/test split (no fixed random_state on the split step).
 COINSTAC_REF = {
-    "w_owner":          3.6133,
-    "intercept_owner":  16.3894,
+    "w_owner": 3.6133,
+    "intercept_owner": 16.3894,
     "rmse_train_owner": 1.3441,
-    "rmse_test_owner":  0.8761,
-    "mae_train_owner":  1.2498,
-    "mae_test_owner":   0.7417,
+    "rmse_test_owner": 0.8761,
+    "mae_train_owner": 1.2498,
+    "mae_test_owner": 0.7417,
     "rmse_train_local": 0.000293,
-    "rmse_test_local":  0.9371,
-    "mae_train_local":  0.000220,
-    "mae_test_local":   0.6901,
-    "w_local_0":        0.033596,
-    "intercept_local":  0.052848,
+    "rmse_test_local": 0.9371,
+    "mae_train_local": 0.000220,
+    "mae_test_local": 0.6901,
+    "w_local_0": 0.033596,
+    "intercept_local": 0.052848,
 }
 
 
@@ -89,23 +83,24 @@ COINSTAC_REF = {
 # Owner report
 # ---------------------------------------------------------------------------
 
+
 def _build_owner_report(r: dict, site_name: str) -> str:
     rmse_train = r.get("rmse_train_owner", 0)
-    rmse_test  = r.get("rmse_test_owner", 0)
-    mae_train  = r.get("mae_train_owner", 0)
-    mae_test   = r.get("mae_test_owner", 0)
-    n_train    = r.get("n_train_samples_owner", 0)
-    n_test     = r.get("n_test_samples_owner", 0)
-    w_owner    = r.get("w_owner", 0)
-    intercept  = r.get("intercept_owner", 0)
+    rmse_test = r.get("rmse_test_owner", 0)
+    mae_train = r.get("mae_train_owner", 0)
+    mae_test = r.get("mae_test_owner", 0)
+    n_train = r.get("n_train_samples_owner", 0)
+    n_test = r.get("n_test_samples_owner", 0)
+    w_owner = r.get("w_owner", 0)
+    intercept = r.get("intercept_owner", 0)
 
     gap_rmse = rmse_test - rmse_train
-    gap_mae  = mae_test  - mae_train
+    gap_mae = mae_test - mae_train
 
     rmse_bar_train = _bar(rmse_train, max(rmse_train, rmse_test) or 1)
-    rmse_bar_test  = _bar(rmse_test,  max(rmse_train, rmse_test) or 1)
-    mae_bar_train  = _bar(mae_train,  max(mae_train, mae_test) or 1)
-    mae_bar_test   = _bar(mae_test,   max(mae_train, mae_test) or 1)
+    rmse_bar_test = _bar(rmse_test, max(rmse_train, rmse_test) or 1)
+    mae_bar_train = _bar(mae_train, max(mae_train, mae_test) or 1)
+    mae_bar_test = _bar(mae_test, max(mae_train, mae_test) or 1)
 
     ref = COINSTAC_REF
 
@@ -148,14 +143,14 @@ def _build_owner_report(r: dict, site_name: str) -> str:
           <td>{rmse_train:.4f}{rmse_bar_train}</td>
           <td>{rmse_test:.4f}{rmse_bar_test}</td>
           <td class="{_gap_class(gap_rmse)}">{gap_rmse:+.4f}</td>
-          <td class="ref">{ref['rmse_test_owner']:.4f}</td>
+          <td class="ref">{ref["rmse_test_owner"]:.4f}</td>
         </tr>
         <tr>
           <td>MAE (years)</td>
           <td>{mae_train:.4f}{mae_bar_train}</td>
           <td>{mae_test:.4f}{mae_bar_test}</td>
           <td class="{_gap_class(gap_mae)}">{gap_mae:+.4f}</td>
-          <td class="ref">{ref['mae_test_owner']:.4f}</td>
+          <td class="ref">{ref["mae_test_owner"]:.4f}</td>
         </tr>
         <tr>
           <td>Subjects</td>
@@ -177,13 +172,13 @@ def _build_owner_report(r: dict, site_name: str) -> str:
         <tr>
           <td>SVR weight (w_owner)</td>
           <td>{_fmt(w_owner)}</td>
-          <td class="ref">{ref['w_owner']:.6f}</td>
+          <td class="ref">{ref["w_owner"]:.6f}</td>
           <td>Scalar weight for the projected feature dimension U</td>
         </tr>
         <tr>
           <td>Intercept</td>
           <td>{_fmt(intercept)}</td>
-          <td class="ref">{ref['intercept_owner']:.6f}</td>
+          <td class="ref">{ref["intercept_owner"]:.6f}</td>
           <td>SVR model intercept (bias term)</td>
         </tr>
       </tbody>
@@ -213,23 +208,24 @@ def _build_owner_report(r: dict, site_name: str) -> str:
 # Member report
 # ---------------------------------------------------------------------------
 
+
 def _build_local_report(r: dict, site_name: str) -> str:
     rmse_train = r.get("rmse_train_local", 0)
-    rmse_test  = r.get("rmse_test_local", 0)
-    mae_train  = r.get("mae_train_local", 0)
-    mae_test   = r.get("mae_test_local", 0)
-    n_train    = r.get("n_train_samples_local", 0)
-    n_test     = r.get("n_test_samples_local", 0)
+    rmse_test = r.get("rmse_test_local", 0)
+    mae_train = r.get("mae_train_local", 0)
+    mae_test = r.get("mae_test_local", 0)
+    n_train = r.get("n_train_samples_local", 0)
+    n_test = r.get("n_test_samples_local", 0)
     n_features = len(r.get("w_local", []))
-    w_local    = r.get("w_local", [])
+    w_local = r.get("w_local", [])
 
     gap_rmse = rmse_test - rmse_train
-    gap_mae  = mae_test  - mae_train
+    gap_mae = mae_test - mae_train
 
     rmse_bar_train = _bar(rmse_train, max(rmse_train, rmse_test) or 1)
-    rmse_bar_test  = _bar(rmse_test,  max(rmse_train, rmse_test) or 1)
-    mae_bar_train  = _bar(mae_train,  max(mae_train, mae_test) or 1)
-    mae_bar_test   = _bar(mae_test,   max(mae_train, mae_test) or 1)
+    rmse_bar_test = _bar(rmse_test, max(rmse_train, rmse_test) or 1)
+    mae_bar_train = _bar(mae_train, max(mae_train, mae_test) or 1)
+    mae_bar_test = _bar(mae_test, max(mae_train, mae_test) or 1)
 
     ref = COINSTAC_REF
 
@@ -277,14 +273,14 @@ def _build_local_report(r: dict, site_name: str) -> str:
           <td>{rmse_train:.6f}{rmse_bar_train}</td>
           <td>{rmse_test:.6f}{rmse_bar_test}</td>
           <td class="{_gap_class(gap_rmse)}">{gap_rmse:+.6f}</td>
-          <td class="ref">{ref['rmse_test_local']:.6f}</td>
+          <td class="ref">{ref["rmse_test_local"]:.6f}</td>
         </tr>
         <tr>
           <td>MAE (years)</td>
           <td>{mae_train:.6f}{mae_bar_train}</td>
           <td>{mae_test:.6f}{mae_bar_test}</td>
           <td class="{_gap_class(gap_mae)}">{gap_mae:+.6f}</td>
-          <td class="ref">{ref['mae_test_local']:.6f}</td>
+          <td class="ref">{ref["mae_test_local"]:.6f}</td>
         </tr>
         <tr>
           <td>Subjects</td>
@@ -305,9 +301,9 @@ def _build_local_report(r: dict, site_name: str) -> str:
         <tr><td>Weight vector min</td><td>{_fmt(_safe_min(w_local))}</td><td class="ref">—</td></tr>
         <tr><td>Weight vector max</td><td>{_fmt(_safe_max(w_local))}</td><td class="ref">—</td></tr>
         <tr><td>w_local[0]</td><td>{_fmt(w_local[0] if w_local else 0)}</td>
-            <td class="ref">{ref['w_local_0']:.6f}</td></tr>
+            <td class="ref">{ref["w_local_0"]:.6f}</td></tr>
         <tr><td>Intercept</td><td>{_fmt(_safe_first(r.get("intercept_local")))}</td>
-            <td class="ref">{ref['intercept_local']:.6f}</td></tr>
+            <td class="ref">{ref["intercept_local"]:.6f}</td></tr>
       </tbody>
     </table>
     <p class="note">Small differences in weight values between runs are due to the random train/test
@@ -341,6 +337,7 @@ def _build_empty_report() -> str:
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _fmt(value, decimals=6):
     if isinstance(value, float):
         return f"{value:.{decimals}f}"
@@ -365,11 +362,14 @@ def _bar(value: float, max_value: float) -> str:
 def _safe_mean(lst):
     return sum(lst) / len(lst) if lst else 0.0
 
+
 def _safe_min(lst):
     return min(lst) if lst else 0.0
 
+
 def _safe_max(lst):
     return max(lst) if lst else 0.0
+
 
 def _safe_first(val):
     if isinstance(val, list):
@@ -380,6 +380,7 @@ def _safe_first(val):
 # ---------------------------------------------------------------------------
 # HTML wrapper
 # ---------------------------------------------------------------------------
+
 
 def _wrap(body: str) -> str:
     return f"""<!DOCTYPE html>
