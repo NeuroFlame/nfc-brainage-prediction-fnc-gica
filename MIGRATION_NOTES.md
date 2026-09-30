@@ -94,8 +94,12 @@ so the migration did not cause this. The test data is synthetic
 (`synth-siteN-*.nii`) and may not relate FNC to age. The single projected
 feature, with the default `LinearSVR` settings, may also underfit.
 
-**The report's COINSTAC reference values are from a different dataset.**
-`COINSTAC_REF` in `report.py` is documented as a run where site1 and site2 had
-identical 20-subject data. All sites in the current test data differ, so the
-"COINSTAC ref" columns in `index.html` can't be compared with runs on this
-data.
+## Post-migration changes
+
+### Removed COINSTAC reference columns from the report (2026-09-30)
+
+The `index.html` report showed "COINSTAC ref" columns next to this run's
+values. They came from a run in which site1 and site2 had identical 20-subject
+data, but every site in the current test data is different, so the values
+could not be compared with any run. The columns and the `COINSTAC_REF`
+constant were removed. The report's other content is unchanged.
