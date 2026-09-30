@@ -9,9 +9,9 @@
   },
   "image": {
     "title": "nfc-brainage-prediction-fnc-gica",
-    "repository": "dylanrmartin/computations",
-    "floatingTag": "nfc-brainage-prediction-fnc-gica",
-    "tagPrefix": "nfc-brainage-prediction-fnc-gica-",
+    "repository": "coinstacteam/nfc-brainage-prediction-fnc-gica",
+    "floatingTag": "latest",
+    "tagPrefix": "",
     "source": "https://github.com/NeuroFlame/nfc-brainage-prediction-fnc-gica"
   }
 }
